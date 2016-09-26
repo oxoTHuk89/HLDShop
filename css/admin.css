@@ -1,0 +1,40 @@
+/*В админке на хуй не нужен магазин*/
+/*Так же сразу скроем по умолчанию таблицы с результатами*/
+.delete_server,
+.create_server,
+.delete_type,
+.create_type,
+.create_priv_for_servers,
+.relations  {
+    display: none;
+}
+
+.table {
+    border: 2px solid black;
+    background-color: white;
+    width: 60%;
+    margin: 20px auto 0 auto;
+}
+
+.serverlist_tbl {
+    margin: 0 auto;
+    border: 4px solid whitesmoke;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.serverlist_tbl {
+    color: #FFF;
+    padding: 3px;
+    border: 2px solid whitesmoke;
+    border-radius: 5px;
+}
+
+.serverlist_tbl, .create_server_tbl input, select {
+    color: #000;
+}
+
+input{
+    color: #000;
+}
