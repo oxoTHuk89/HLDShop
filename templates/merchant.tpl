@@ -2,7 +2,7 @@
     {if isset($MerchantForm)}
         {*<form action={$MerchantForm.action} id="merchant">*}
         {*<form action="result.php" id="merchant">*}
-        <form action={$MerchantForm.action} id="merchant">
+        <form action="result.php" id="merchant">
             {if $MerchantForm.merchant_type == 1}
                 <input type="hidden" name="account" value="{$MerchantForm.inv_id}">
                 <input type="hidden" name="currency" value="{$MerchantForm.currency}">

@@ -171,7 +171,7 @@ if (isset($_POST['priv_update']) && $_POST['serverid'] != "") {
         //Берем имя текущей услуги, чтобы на форме она была selected
         $selected = $dbh->prepare("
                                 SELECT pt.id AS id, pt.name AS name, pts.cost AS cost
-                                  FROM pay_type_servers pts
+                                  FROM pay_type pts
                                   JOIN pay_type pt
                                     ON pt.id = pts.pay_type
                                  WHERE ACCESS = :ACCESS

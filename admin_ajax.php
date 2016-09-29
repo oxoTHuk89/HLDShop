@@ -18,7 +18,7 @@ if (isset($_POST['del_srv'])) {
         $delete = $dbh->prepare("DELETE FROM servers WHERE id = :server_id");
         $delete->bindParam(':server_id', $server_id, PDO::PARAM_INT);
         $delete->execute();
-        $delete = $dbh->prepare("DELETE FROM pay_type_servers WHERE pay_serverid = :server_id");
+        $delete = $dbh->prepare("DELETE FROM pay_type WHERE pay_serverid = :server_id");
         $delete->bindParam(':server_id', $server_id, PDO::PARAM_INT);
         $delete->execute();
         $result = "Сервер " . $servers_check['servername'] . " удален!";
@@ -72,7 +72,7 @@ if (isset($_POST['del_priv'])) {
         $delete = $dbh->prepare("DELETE FROM pay_type WHERE id = :type");
         $delete->bindParam(':type', $type, PDO::PARAM_INT);
         $delete->execute();
-        $delete = $dbh->prepare("DELETE FROM pay_type_servers WHERE pay_type = :type");
+        $delete = $dbh->prepare("DELETE FROM pay_type WHERE pay_type = :type");
         $delete->bindParam(':type', $type, PDO::PARAM_INT);
         $delete->execute();
         $result = "Услуга " . $priv_check['name'] . " удалена!";
@@ -139,7 +139,7 @@ if (isset($_POST['add_priv_to_server'])) {
         $result = "На кой хуй сумма буквами?! о0";
     } else {
         $insert = $dbh->prepare("
-            INSERT INTO pay_type_servers (pay_type, pay_serverid, cost)
+            INSERT INTO pay_type (pay_type, pay_serverid, cost)
               VALUES (:typelist, :server_id, :cost)");
         $insert->bindParam(':typelist', $typelist, PDO::PARAM_INT);
         $insert->bindParam(':server_id', $serverlist, PDO::PARAM_INT);
@@ -153,7 +153,7 @@ if (isset($_POST['add_priv_to_server'])) {
         if ($error == 23000) {
             $result = "Такая услуга есть на выбранном сервере. Обновлена стоимость!";
             $update = $dbh->prepare("
-                        UPDATE pay_type_servers
+                        UPDATE pay_type
                         SET cost = :cost
                         WHERE pay_serverid = :server_id AND pay_type = :typelist");
             $update->bindParam(':typelist', $typelist, PDO::PARAM_INT);
@@ -180,7 +180,7 @@ if (isset($_POST['relations'])) {
         $cost = intval($cost);
         if (isset($_POST['delete_relations'])) {
             $query = $dbh->prepare("
-                            DELETE FROM pay_type_servers
+                            DELETE FROM pay_type
                              WHERE pay_type = :type
                                AND pay_serverid = :server_id
                                AND cost = :cost");
@@ -197,7 +197,7 @@ if (isset($_POST['relations'])) {
         }
         if (isset($_POST['save_cost'])) {
             $query = $dbh->prepare("
-                            UPDATE pay_type_servers
+                            UPDATE pay_type
                              SET cost = :cost
                              WHERE pay_type = :type
                                AND pay_serverid = :server_id");

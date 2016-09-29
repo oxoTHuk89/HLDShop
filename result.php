@@ -1,5 +1,5 @@
 <?php
-include("../shop_test/connect.php");
+include("../shop_new/connect.php");
 //echo json_encode($secret_key);
 //require '/include/SourceQuery.class.php';
 //установка текущего времени
@@ -15,11 +15,12 @@ $crc = strtoupper($_REQUEST["SignatureValue"]);
 // build own CRC
 $my_crc = strtoupper(md5("$out_summ:$inv_id:$mrh_pass2"));
 
-
+/*
 if ($my_crc != $crc) {
     echo "bad sign\n";
     exit();
-}
+}*/
+
 /*
 $method = $_GET['method'];
 if ($method == "check") {
@@ -51,6 +52,14 @@ if ($method == "check") {
 //$inv_id = $_REQUEST['params']['account'];
 $tm = getdate(time() + 9 * 3600);
 $date = "$tm[year]-$tm[mon]-$tm[mday] $tm[hours]:$tm[minutes]:$tm[seconds]";
+
+//for tests
+$max = $dbh->prepare("SELECT max(id) FROM pay_log");
+$max->execute();
+$max = $max->fetch(PDO::FETCH_ASSOC);
+$inv_id = $max['max(id)'];
+//for tests
+
 
 $query = $dbh->prepare("UPDATE pay_log SET status = 1 WHERE id = :inv_id");
 $query->bindParam(':inv_id', $inv_id, PDO::PARAM_INT);
@@ -130,19 +139,30 @@ switch ($query['name']) {
                 $pay->bindParam(':steamid', $query['username'], PDO::PARAM_STR);
                 break;
         }
-}
-   /* case 'source':
+
+    case 'csgo':
         switch ($query['updater']) {
             case 0:
+                $auth_type = 0;
+                $pass_key = 0;
+                //$query['steamid_val'] = 1233215;
                 $pay = $dbh->prepare("
 									INSERT INTO " . CSGO . "." . CSGO_PREFIX . "users
 										(auth, name, auth_type, pass_key, password)
 									VALUES
 										(:auth, :name, :auth_type, :pass_key, :password)");
+                $pay->bindParam(':auth', $query['steamid_val'], PDO::PARAM_INT);
+                $pay->bindParam(':name', $query['username'], PDO::PARAM_STR);
+                $pay->bindParam(':auth_type', $auth_type, PDO::PARAM_STR);
+                $pay->bindParam(':pass_key', $pass_key, PDO::PARAM_STR);
+                $pay->bindParam(':password', $query['pasword'], PDO::PARAM_STR);
                 break;
-        }*/
-
-
+        }
+}
+var_dump($query);
+var_dump($auth_type);
+var_dump($pass_key);
+var_dump(CSGO_PREFIX);
 if ($pay->execute()) {
     $lastInsertId = $dbh->lastInsertId();
     switch ($query['name']) {

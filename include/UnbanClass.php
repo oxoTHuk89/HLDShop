@@ -85,7 +85,7 @@ class Unban
         //Берем цену услуги по умолчанию (за 30 дней)
         $cost_gen = $dbh->prepare("
                 SELECT pts.cost, pg.name
-                  FROM `pay_type_servers` pts
+                  FROM `pay_type` pts
                     JOIN `servers` s
 					  ON s.id = pts.pay_serverid
 					JOIN `pay_games` pg

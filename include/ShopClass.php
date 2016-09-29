@@ -76,7 +76,7 @@ class Shop
                               FROM " . CSTRIKE . "." . CSTRIKE_PREFIX . "amxadmins admins
                              WHERE admins.steamid = :username");
                 break;
-            case 'source':
+            case 'csgo':
                 $name_validate = $dbh->prepare("
                             SELECT count(1)
                               FROM " . CSGO . "." . CSGO_PREFIX . "users admins

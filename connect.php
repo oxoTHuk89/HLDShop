@@ -1,27 +1,27 @@
 <?php
 error_reporting(E_ALL);
-define ("DOCUMENT_ROOT", $_SERVER['DOCUMENT_ROOT']."/shop_test");
-define ("CSTRIKE", "");
-define ("CSTRIKE_PREFIX", "");
-define ("CSGO", "");
-define ("CSGO_PREFIX", "");
-define ("SHOP", "");
-define ("SHOP_PREFIX", "");
+define ("DOCUMENT_ROOT", $_SERVER['DOCUMENT_ROOT']."");
+define ("CSTRIKE", "burikovs_bans");
+define ("CSTRIKE_PREFIX", "amx_");
+define ("CSGO", "goroot_vip");
+define ("CSGO_PREFIX", "vip_");
+define ("SHOP", "shop");
+define ("SHOP_PREFIX", "pay_");
 define ("DATE", date("Y-m-d h:i:s"));
 //База данных, подключение
-$user = "";
-$password = "";
-$host = "";
-$db_shop = "";
+$user = "root";
+$password = "EeY9door";
+$host = "localhost";
+$db_shop = "shop";
 //БД halflife
-$db_csbans = ""; //Сама БД
-$admin_csbans = ""; //Таблица с админами
-$bans_csbans = ""; //Таблица с банами
+$db_csbans = "burikovs_bans"; //Сама БД
+$admin_csbans = "amx_amxadmins"; //Таблица с админами
+$bans_csbans = "amx_bans"; //Таблица с банами
 
 //БД source
-$db_gobans = ""; //Сама БД
-$admin_gobans = ""; //Таблица с админами
-$bans_gobans = ""; //Таблица с банами
+$db_gobans = "goroot_bans"; //Сама БД
+$admin_gobans = "sb_admins"; //Таблица с админами
+$bans_gobans = "sb_bans"; //Таблица с банами
 
 //Заголовки модальных окон (пока тут, может в БД уйдет, пока хз)
 $titles['shop'] = "Магазин";
@@ -42,14 +42,14 @@ try {
 } catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();
-}
+}/*
 try {
     $connect_gobans = new PDO('mysql:host=' . $host . ';dbname=' . $db_gobans, $user, $password);
     $connect_gobans->query("SET NAMES utf8");
 } catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();
-}
+}*/
 
 //Выобор платежной системы
 //1 - UnitPay
@@ -75,10 +75,10 @@ $cmd = "amx_reloadadmins";
 
 //Sucsess
 $url = "http://g-nation.ru/index.php?/topic/367-faq-po-magazinu/#entry3715";
-/*
+
 function StringInputCleaner($data){
     $data = trim($data);
     $data = stripslashes($data);
     $data = (filter_var($data, FILTER_SANITIZE_STRING));
     return $data;
-}*/
+}

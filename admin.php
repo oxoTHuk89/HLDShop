@@ -14,7 +14,7 @@ SELECT pt.name        AS type,
        pts.cost,
        srv.servername AS server_name,
        srv.id         AS server_id
-  FROM pay_type_servers pts
+  FROM pay_type pts
   JOIN pay_type pt
     ON pt.id = pts.pay_type
   JOIN servers srv
