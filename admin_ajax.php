@@ -144,10 +144,13 @@ if (isset($_POST['add_priv_to_server'])) {
         $insert->bindParam(':typelist', $typelist, PDO::PARAM_INT);
         $insert->bindParam(':server_id', $serverlist, PDO::PARAM_INT);
         $insert->bindParam(':cost', $cost, PDO::PARAM_INT);
-        $insert->execute();
-        $error = $insert->errorInfo();
-        //var_dump($error);
-        if ($error[1] == 1062) {
+        try {
+            $insert->execute();
+        } catch (PDOException $e) {
+            $error = $e->getCode();
+        }
+        $error = "";
+        if ($error == 23000) {
             $result = "Такая услуга есть на выбранном сервере. Обновлена стоимость!";
             $update = $dbh->prepare("
                         UPDATE pay_type_servers
@@ -157,12 +160,14 @@ if (isset($_POST['add_priv_to_server'])) {
             $update->bindParam(':server_id', $serverlist, PDO::PARAM_INT);
             $update->bindParam(':cost', $cost, PDO::PARAM_INT);
             $update->execute();
-        } else if ($error[1] != 00000 && $error[1] != 1062) {
-            $result = $error[2];
-        } else {
-            $result = "Услуга привязана к серверу!";
+             } else if ($error[1] != 00000 && $error[1] != 1062) {
+                 $result = $error[2];
+             } else {
+                 $result = "Услуга привязана к серверу!";
+             }
         }
-    }
+    
+
     if (isset($result)) {
         echo json_encode($result);
     }

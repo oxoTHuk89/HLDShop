@@ -1,29 +1,27 @@
 <?php
 error_reporting(E_ALL);
-
-define ("PROJECT_ROOT", $_SERVER['DOCUMENT_ROOT']);
-define ("DOCUMENT_ROOT", $_SERVER['DOCUMENT_ROOT']);
-define ("CSTRIKE", "amxbans");
-define ("CSTRIKE_PREFIX", "amx_");
-define ("CSGO", "burikovs_bans");
-define ("CSGO_PREFIX", "sb_");
-define ("SHOP", "shop");
-define ("SHOP_PREFIX", "pay_");
+define ("DOCUMENT_ROOT", $_SERVER['DOCUMENT_ROOT']."/shop_test");
+define ("CSTRIKE", "");
+define ("CSTRIKE_PREFIX", "");
+define ("CSGO", "");
+define ("CSGO_PREFIX", "");
+define ("SHOP", "");
+define ("SHOP_PREFIX", "");
 define ("DATE", date("Y-m-d h:i:s"));
 //База данных, подключение
-$user = "root";
-$password = "EeY9door";
-$host = "myadmin.g-nation.ru";
-$db_shop = "shop";
+$user = "";
+$password = "";
+$host = "";
+$db_shop = "";
 //БД halflife
-$db_csbans = "burikovs_bans"; //Сама БД
-$admin_csbans = "amxbans"; //Таблица с админами
-$bans_csbans = "amx_bans"; //Таблица с банами
+$db_csbans = ""; //Сама БД
+$admin_csbans = ""; //Таблица с админами
+$bans_csbans = ""; //Таблица с банами
 
 //БД source
-$db_gobans = "goroot_bans"; //Сама БД
-$admin_gobans = "sb_admins"; //Таблица с админами
-$bans_gobans = "sb_bans"; //Таблица с банами
+$db_gobans = ""; //Сама БД
+$admin_gobans = ""; //Таблица с админами
+$bans_gobans = ""; //Таблица с банами
 
 //Заголовки модальных окон (пока тут, может в БД уйдет, пока хз)
 $titles['shop'] = "Магазин";
@@ -31,7 +29,7 @@ $titles['unban'] = "Снять бан";
 $titles['extension'] = "Продление";
 try {
     $dbh = new PDO('mysql:host=' . $host . ';dbname=' . $db_shop, $user, $password);
-    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
+    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $dbh->query("SET NAMES utf8");
 } catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";
@@ -53,15 +51,14 @@ try {
     die();
 }
 
-//Объявим мерчант раскомментировать нужный (по две строки)
-//$merchant['name'] = "Robokassa";
-//$merchant['action'] = "https://merchant.roboxchange.com/Index.aspx";
-$merchant['name'] = "Unitpay";
-$merchant['action'] = "https://unitpay.ru/pay/41421-2f8c5";
-//$merchant = "Unitpay";
+//Выобор платежной системы
+//1 - UnitPay
+//2 - Robokassa
+//3 и далее резерв под WebMoney и т.д.
+//Настраивать мерчат нужно в include/MerchantClass.php
+//Номер нужного мерчанта соответствует переменной $merchant
+$merchant = 2;
 
-
-$secret_key = "76f06cb01de51ac0225d74f07c4b9b3a";
 //Robokassa
 $mrh_login = "g-nation_test";
 $mrh_pass1 = "Uw95OBWy1tw8R4thWPla";
@@ -78,10 +75,10 @@ $cmd = "amx_reloadadmins";
 
 //Sucsess
 $url = "http://g-nation.ru/index.php?/topic/367-faq-po-magazinu/#entry3715";
-
+/*
 function StringInputCleaner($data){
     $data = trim($data);
     $data = stripslashes($data);
     $data = (filter_var($data, FILTER_SANITIZE_STRING));
     return $data;
-}
+}*/

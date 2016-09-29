@@ -9,13 +9,19 @@ require_once(DOCUMENT_ROOT . "/connect.php");
 
 class Merchant
 {
-    public function getFrom($static, $dynamic, $inv_desc)
+    /**
+     * @param PDO $merchant Номер мерчанта, который использовать
+     * @param array $dynamic Динамические данные, приходящие из классов
+     * @param array $inv_desc Описание услуги. Будет отображаться на странице подтверждения
+     * @return array
+     */
+    public function getFrom($merchant, $dynamic, $inv_desc)
     {
-        switch ($static) {
+        switch ($merchant) {
             //Под еденичкой по любому UnitPay
             case 1:
                 //Все необходимые данные для Unitpay
-                $result['merchant_type'] = $static; //Передаем, чтобы Smarty понял, что это Unitpay
+                $result['merchant_type'] = $merchant; //Передаем, чтобы Smarty понял, что это Unitpay
                 $result['action'] = 'https://unitpay.ru/pay/41421-2f8c5';
                 $result['secretkey'] = '76f06cb01de51ac0225d74f07c4b9b3a';
                 $result['publickey'] = '41421-2f8c5';
@@ -29,11 +35,17 @@ class Merchant
                 break;
             //Под двойкой по любому робокасса
             case 2:
-                $result['merchant_type'] = $static;
-                $result['action'] = 'http://test.robokassa.ru/Index.aspx';
-                $result['login'] = 'g-nation_test';
-                $result['password1'] = 'Uw95OBWy1tw8R4thWPla';
-                $result['password2'] = 'grBhpq02aXzd09if3Vnz';
+                $result['merchant_type'] = $merchant;
+                $result['action'] = 'https://auth.robokassa.ru/Merchant/Index.aspx';
+                $result['login'] = 'gm_new';
+                $result['password1'] = 'php.ru753';
+                //$result['password1'] = 'Uw95OBWy1tw8R4thWPla';
+                $result['password2'] = 'gfteam.ru753';
+                //$result['password2'] = 'grBhpq02aXzd09if3Vnz';
+                $result['inv_id'] = (int)$dynamic['id'];
+                $result['cost'] = $dynamic['cost'];
+                $result['inv_desc'] = $inv_desc;
+                $result['signature'] = md5($result['login'].":".$result['cost'].":".$result['inv_id'].":".$result['password1']);
                 break;
         }
         return $result;

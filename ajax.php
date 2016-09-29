@@ -6,6 +6,7 @@ require_once('include/ShopClass.php');
 require_once('include/UnbanClass.php');
 require_once('include/MerchantClass.php');
 require_once('include/ExtensionClass.php');
+require_once('include/ServersClass.php');
 //Обновляем список услуг в зависимости от сервера
 
 
@@ -18,7 +19,7 @@ if (isset($_POST['priv_update']) && $_POST['serverid'] != "") {
     //Магазин
     if (isset($_POST['accept'])) {
         $acceptBuy = new Shop();
-        $result = $acceptBuy->acceptBuy($dbh, $_POST, DATE, $merchant);
+        $result = $acceptBuy->acceptBuy($dbh, $_POST, DATE);
         if (!isset($result['error'])) {
             $getMerchantForm = true;
             $smarty->assign('accept', true);
@@ -27,7 +28,6 @@ if (isset($_POST['priv_update']) && $_POST['serverid'] != "") {
             }
         }
     }
-
 
     if (isset($_POST['find_username'])) {
         $smarty->assign('find_username', true);
@@ -41,14 +41,7 @@ if (isset($_POST['priv_update']) && $_POST['serverid'] != "") {
             $smarty->assign($k, $v);
         }
 
-        $smarty->assign('cost', $priv_update['cost']);
-        $smarty->assign('currency', $priv_update['currency']);
-        $smarty->assign('inv_id', $priv_update['inv_id']);
-        $smarty->assign('shp_item', $priv_update['shp_item']);
-        $smarty->assign('inv_desc', $priv_update['inv_desc']);
-        $smarty->assign('crc', $priv_update['crc']);
-        $smarty->assign('merchant_name', $merchant);
-        $smarty->assign('merchant_action', $merchant['action']);
+
 
         /*$username = $_POST['username'];
         $game = $_POST['game'];
@@ -102,11 +95,11 @@ if (isset($_POST['priv_update']) && $_POST['serverid'] != "") {
         $ajaxFindUser = new ExtensionClass();
         $result = $ajaxFindUser->ajaxFindUser($dbh, $_POST);
         if (!isset($result['error'])) {
-            $smarty->assign('result', $result);
             $smarty->assign('priv_lists', true);
+            $smarty->assign('result', $result);
         }
     }
-    //Продление подтверждение, если гуд, то форма сама отправится
+    //Продление подтверждение, если гуд, то форма сама отправится (в js раскомментить на релизе)
     if (isset($_POST['extension_check'])) {
         $smarty->assign('username_check', true);
         $ajaxFindUser = new ExtensionClass();
@@ -144,7 +137,6 @@ if (isset($_POST['priv_update']) && $_POST['serverid'] != "") {
     $server_check->bindParam(':serverid', $serverid, PDO::PARAM_INT);
     $server_check->execute();
     $server_check = $server_check->fetch(PDO::FETCH_ASSOC);
-    //var_dump($server_check);
     //Идентифицируем админа
     if ($server_check['type'] == "halflife") {
         $query = $dbh->prepare("
@@ -188,7 +180,6 @@ if (isset($_POST['priv_update']) && $_POST['serverid'] != "") {
         $selected->bindParam(':serverid', $serverid, PDO::PARAM_INT);
         $selected->execute();
         $selected = $selected->fetch(PDO::FETCH_ASSOC);
-        var_dump($selected);
         $selected = $selected['id'];
         $smarty->assign('selected', $selected);
         $query = $dbh->prepare("
@@ -301,8 +292,6 @@ if (isset($_POST['shop'])) {
             //Ищем админа по нику
             $sql = $dbh->query("SELECT COUNT(*) FROM amx_amxadmins WHERE steamid='" . $_POST['username'] . "'");
             $row = $sql->fetch();
-            //var_dump($row);
-            //die();
         } else if ($_POST['servers_type'] == "source") {
             //Для результата берем имя сервера
             $hostname = trim($_POST['hostname']);

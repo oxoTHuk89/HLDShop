@@ -40,7 +40,6 @@ class Shop
     /**
      * @param PDO $dbh Для подключения к БД
      * @param array $data из массива POST
-     * @param string $inv_desc из настроек
      * @return array
      */
     public function acceptBuy($dbh, $data, $date)
@@ -60,20 +59,18 @@ class Shop
                                     JOIN servers s
                                       ON s.id = pts.pay_serverid
                                     JOIN pay_games pg
-                                      ON pg.name = s.type
+                                      ON pg.id = s.type
                                 WHERE pay_serverid = :serverid
                                 AND pay_type = :types");
         //Биндим переменные
         $query->bindParam(':serverid', $serverid, PDO::PARAM_INT);
         $query->bindParam(':types', $types, PDO::PARAM_INT);
         $query->execute();
-        var_dump($query);
-
         $query = $query->fetch(PDO::FETCH_ASSOC);
 
-        //Высчитываем стоимость в зависимости от дней
+        //В зависимости от игры поиск существующих с таким ником
         switch ($query['game_name']) {
-            case 'halflife':
+            case 'cstrike':
                 $name_validate = $dbh->prepare("
                             SELECT count(1)
                               FROM " . CSTRIKE . "." . CSTRIKE_PREFIX . "amxadmins admins
@@ -82,16 +79,17 @@ class Shop
             case 'source':
                 $name_validate = $dbh->prepare("
                             SELECT count(1)
-                              FROM " . CSGO . "." . CSGO_PREFIX . "admins admins
-                             WHERE admins.user = :username");
+                              FROM " . CSGO . "." . CSGO_PREFIX . "users admins
+                             WHERE admins.name = :username");
         }
+
+        //Высчитываем стоимость в зависимости от дней
         $cost_by_day = intval($query['cost']) / 30;
         $cost = $cost_by_day * $days;
 
         $name_validate->bindParam(':username', $username, PDO::PARAM_STR);
         $name_validate->execute();
         $name_validate = $name_validate->fetch(PDO::FETCH_NUM);
-
         if ($name_validate[0] != 0) {
             $result['error'] = true;
             $result['error_message'] = "STEAMID или ник заняты. Введите другой!";

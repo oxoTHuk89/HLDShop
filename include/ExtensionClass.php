@@ -18,6 +18,7 @@ class ExtensionClass
         $game = intval($data['game']);
         $username = StringInputCleaner($data['username']);
         $password = md5(StringInputCleaner($data['password']));
+
         $currency = StringInputCleaner($data['currency']);
 
         if (isset($game)) {
@@ -28,6 +29,7 @@ class ExtensionClass
             $query->bindParam(':game', $game, PDO::PARAM_INT);
             $query->execute();
             $query = $query->fetch(PDO::FETCH_ASSOC);
+
             switch ($query['gamename']) {
                 case 'halflife':
                     $usersinfo = $dbh->prepare("
@@ -47,7 +49,7 @@ class ExtensionClass
                                            pts.cost,
                                            pts_custom.cost AS custom_cost
                                       FROM " . CSTRIKE . "." . CSTRIKE_PREFIX . "amxadmins admin
-                                       JOIN " . CSTRIKE . "." . CSTRIKE_PREFIX . "admins_servers aas
+                                       LEFT JOIN " . CSTRIKE . "." . CSTRIKE_PREFIX . "admins_servers aas
                                         ON aas.admin_id = admin.id
                                        JOIN " . SHOP . "." . SHOP_PREFIX . "type pt
                                         ON pt.access = admin.access
@@ -67,26 +69,44 @@ class ExtensionClass
                     break;
                 case 'source':
                     $usersinfo = $dbh->prepare("
-                            SELECT aid, user AS login, password AS password, gid AS flags, expired AS expired
-                              FROM goroot_bans.sb_admins
-                             WHERE steamid = :username
-                               AND password = :password");
+                            SELECT vp.name AS login, vp.id AS id, vo.group, vo.server_id AS shop_srv_id, vo.expires AS expired
+                              FROM " . CSGO . "." . CSGO_PREFIX . "users vp
+                               JOIN " . CSGO . "." . CSGO_PREFIX . "overrides vo
+                               ON vo.user_id = vp.id
+                             WHERE name = :username");
                     break;
                 case 'samp':
                     echo "i это пирог";
                     break;
             }
+
             $usersinfo->bindParam(':username', $username, PDO::PARAM_STR);
             $usersinfo->bindParam(':password', $password, PDO::PARAM_STR);
             $usersinfo->execute();
+            var_dump($usersinfo);
+            var_dump($username);
+            var_dump($password);
             $usersinfo = $usersinfo->fetchAll(PDO::FETCH_ASSOC);
+
             if ($usersinfo) {
-                for ($i = 0; $i < count($usersinfo); $i++) {
-                    $usersinfo[$i]['typename'] = ($usersinfo[$i]['custom_flags']) ? $usersinfo[$i]['custom_name'] : $usersinfo[$i]['access'];
-                    $usersinfo[$i]['pay_type'] = ($usersinfo[$i]['custom_id']) ? $usersinfo[$i]['custom_id'] : $usersinfo[$i]['pay_type'];
-                    $usersinfo[$i]['game'] = $game;
-                    $usersinfo[$i]['currency'] = $currency;
-                    $result[] = $usersinfo[$i];
+                switch ($query['gamename']) {
+                    case 'halflife':
+                        for ($i = 0; $i < count($usersinfo); $i++) {
+                            $usersinfo[$i]['typename'] = ($usersinfo[$i]['custom_flags']) ? $usersinfo[$i]['custom_name'] : $usersinfo[$i]['access'];
+                            $usersinfo[$i]['pay_type'] = ($usersinfo[$i]['custom_id']) ? $usersinfo[$i]['custom_id'] : $usersinfo[$i]['pay_type'];
+                            $usersinfo[$i]['game'] = $game;
+                            $usersinfo[$i]['currency'] = $currency;
+                            $result[] = $usersinfo[$i];
+                        }
+                        break;
+                    case 'source':
+                        for ($i = 0; $i < count($usersinfo); $i++) {
+                            $usersinfo[$i]['typename'] = $usersinfo[$i]['group'];
+                            $usersinfo[$i]['pay_type'] = $usersinfo[$i]['group'];
+                            $usersinfo[$i]['game'] = $game;
+                            $usersinfo[$i]['currency'] = $currency;
+                            $result[] = $usersinfo[$i];
+                        }
                 }
             } else {
                 $result['error'] = true;
@@ -120,13 +140,16 @@ class ExtensionClass
         $query_admin->execute();
 
         $query_cost = $dbh->prepare("
-						SELECT cost
-						  FROM " . SHOP . "." . SHOP_PREFIX . "type_servers
+						SELECT pts.cost, ss.type AS gametype
+						  FROM " . SHOP . "." . SHOP_PREFIX . "type_servers pts
+						  JOIN " . SHOP . ".servers ss
+                             ON pts.pay_serverid = ss.id
 							WHERE pay_type = :pay_type
 							AND pay_serverid = :shop_srv_id");
         $query_cost->bindParam(':pay_type', $pay_type, PDO::PARAM_INT);
         $query_cost->bindParam(':shop_srv_id', $shop_srv_id, PDO::PARAM_INT);
         $query_cost->execute();
+
         //Массивы
         $query_admin = $query_admin->fetch(PDO::FETCH_ASSOC);
         $query_cost = $query_cost->fetch(PDO::FETCH_ASSOC);
@@ -138,8 +161,8 @@ class ExtensionClass
             $result['error_message'] = "Форма не прошла проверку - сумма не совпадает!";
         } else {
             $insert = $dbh->prepare("
-                            INSERT INTO SHOP.pay_log (cost, username, pasword, server_id, type, status, date, vk, game_type, days, currency)
-                              VALUES (:cost, :username, :password, :serverid, :type, :status, :date, :vk, :game_type, :days, :currency)");
+                            INSERT INTO shop.pay_log (cost, username, pasword, server_id, type, status, date, vk, game_type, days, currency, updater)
+                              VALUES (:cost, :username, :password, :serverid, :type, :status, :date, :vk, :game_type, :days, :currency, 1)");
             $insert->bindParam(':cost', $query_cost['cost'], PDO::PARAM_INT);
             $insert->bindParam(':username', $query_admin['nickname'], PDO::PARAM_STR);
             $insert->bindParam(':password', $query_admin['password'], PDO::PARAM_STR);
@@ -148,7 +171,7 @@ class ExtensionClass
             $insert->bindParam(':status', $status, PDO::PARAM_INT);
             $insert->bindParam(':date', $date, PDO::PARAM_STR);
             $insert->bindParam(':vk', $query_admin['icq'], PDO::PARAM_STR);
-            $insert->bindParam(':game_type', $game, PDO::PARAM_STR);
+            $insert->bindParam(':game_type', $query_cost['gametype'], PDO::PARAM_STR);
             $insert->bindParam(':days', $days, PDO::PARAM_STR);
             $insert->bindParam(':currency', $currency, PDO::PARAM_STR);
             $insert->execute();

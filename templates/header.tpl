@@ -30,9 +30,11 @@
     <!-- Custom -->
     <!-- <script src="js/script.js"></script> -->
     <script src="js/script_new.js"></script>
+    <script src="js/admin.js"></script>
     <script src="js/function.js"></script>
     <script src="js/dialog.js"></script>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
     <!-- Если админка -->
     {*{if $admin}
         <link rel="stylesheet" href="css/admin.css">

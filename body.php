@@ -6,7 +6,11 @@ require_once('include/MerchantClass.php');
 
 
 //Запросы для магазина
-$servers = $dbh->prepare("SELECT id, type, servername FROM servers"); //Сервера
+$servers = $dbh->prepare("
+                SELECT DISTINCT(id), type, servername
+                    FROM servers ss
+                    JOIN pay_type_servers pts
+                      ON pts.pay_serverid = ss.id"); //Сервера
 $servers->execute();
 $types = $dbh->prepare("SELECT id, name FROM ".SHOP_PREFIX."type WHERE active = 1"); //Услуги, списокпо умолчанию
 $types->execute();

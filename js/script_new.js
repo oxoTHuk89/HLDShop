@@ -53,6 +53,7 @@ $(document).ready(function () {
     $("#open_extension").click(function () {
         var width = 550;
         shopDailog(width, extension);
+        console.log(extension);
     });
 
     //По смене сервера меняем список услуг магия.
@@ -83,7 +84,7 @@ $(document).ready(function () {
                  */
                 $.each(json, function (name, value) {
                     //Если тип игры сурс, показываем поле со стимид
-                    if (value.server_type == 2) {
+                    if (value.server_type == "source") {
                         $(zakyp).find("#steamid").show();
                     }
                     $(zakyp).find("#types").append("<option value=" + value.type_id + ">" + value.type + "</option>");
@@ -125,10 +126,11 @@ $(document).ready(function () {
             error = "Заполните все поля";
         }
         //Если CS:GO - STEAM_ID обязательный
+        console.log(data);
         if (data.game == "source" && data.steamid_val == "") {
             error = "STEAM_ID не заполнено";
         }
-        if (data.username.length <= 3) {
+        if (data.username.length <= 2) {
             error = "Никнейм слишком короткий";
         }
         if (error) {

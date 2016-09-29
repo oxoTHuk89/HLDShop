@@ -100,6 +100,7 @@ $(document).ready(function () {
             dataType: 'JSON',
             data: data,
             success: function (json) {
+
                 var width = 550;
                 success(json, width, name); //Данные, которые пришли после обработки, ширина будущего диалога
             },
