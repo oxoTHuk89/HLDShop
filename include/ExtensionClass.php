@@ -31,7 +31,7 @@ class ExtensionClass
             $query = $query->fetch(PDO::FETCH_ASSOC);
 
             switch ($query['gamename']) {
-                case 'halflife':
+                case 'cstrike':
                     $usersinfo = $dbh->prepare("
                                     SELECT admin.id AS admin_id,
                                            admin.steamid  AS login,
@@ -67,30 +67,44 @@ class ExtensionClass
                                        AND admin.password = :password");
                     $game = $query['gamename'];
                     break;
-                case 'source':
+                case 'csgo':
                     $usersinfo = $dbh->prepare("
-                            SELECT vp.name AS login, vp.id AS id, vo.group, vo.server_id AS shop_srv_id, vo.expires AS expired
-                              FROM " . CSGO . "." . CSGO_PREFIX . "users vp
-                               JOIN " . CSGO . "." . CSGO_PREFIX . "overrides vo
-                               ON vo.user_id = vp.id
-                             WHERE name = :username");
+										SELECT vp.name      AS login,
+											   vp.id        AS admin_id,
+											   vo.group     AS vogroup,
+											   vo.server_id AS shop_srv_id,
+											   vo.expires   AS expired,
+											   pts.cost     AS cost,
+											   pt.id 		AS pay_type,
+											   ss.servername as hostname
+										  FROM goroot_vip.vip_users vp
+										  JOIN goroot_vip.vip_overrides vo
+											ON vo.user_id = vp.id
+										  JOIN shop.pay_type pt
+											ON pt.csgo = vo.group
+											JOIN shop.servers ss
+											ON ss.id = vo.server_id
+										  JOIN shop.pay_type_servers pts
+											ON pts.pay_serverid = vo.server_id
+										   AND pts.pay_type = pt.id
+										 WHERE vp.name = :username
+										   AND vp.password = :password");
+                    $game = $query['gamename'];
                     break;
                 case 'samp':
                     echo "i это пирог";
                     break;
             }
-
             $usersinfo->bindParam(':username', $username, PDO::PARAM_STR);
             $usersinfo->bindParam(':password', $password, PDO::PARAM_STR);
             $usersinfo->execute();
-            var_dump($usersinfo);
-            var_dump($username);
-            var_dump($password);
+
             $usersinfo = $usersinfo->fetchAll(PDO::FETCH_ASSOC);
 
             if ($usersinfo) {
+			
                 switch ($query['gamename']) {
-                    case 'halflife':
+                    case 'cstrike':
                         for ($i = 0; $i < count($usersinfo); $i++) {
                             $usersinfo[$i]['typename'] = ($usersinfo[$i]['custom_flags']) ? $usersinfo[$i]['custom_name'] : $usersinfo[$i]['access'];
                             $usersinfo[$i]['pay_type'] = ($usersinfo[$i]['custom_id']) ? $usersinfo[$i]['custom_id'] : $usersinfo[$i]['pay_type'];
@@ -99,10 +113,10 @@ class ExtensionClass
                             $result[] = $usersinfo[$i];
                         }
                         break;
-                    case 'source':
+                    case 'csgo':
                         for ($i = 0; $i < count($usersinfo); $i++) {
-                            $usersinfo[$i]['typename'] = $usersinfo[$i]['group'];
-                            $usersinfo[$i]['pay_type'] = $usersinfo[$i]['group'];
+                            $usersinfo[$i]['typename'] = $usersinfo[$i]['vogroup'];
+                            $usersinfo[$i]['pay_type'] = $usersinfo[$i]['pay_type'];
                             $usersinfo[$i]['game'] = $game;
                             $usersinfo[$i]['currency'] = $currency;
                             $result[] = $usersinfo[$i];
@@ -131,14 +145,24 @@ class ExtensionClass
         $game = StringInputCleaner($data['game']);
         $currency = StringInputCleaner($data['currency']);
         $days = 30;
-        $query_admin = $dbh->prepare("
-						SELECT count(1), nickname, password, icq
-						  FROM " . CSTRIKE . "." . CSTRIKE_PREFIX . "amxadmins admin
-							WHERE id = :admin_id
-							");
-        $query_admin->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
-        $query_admin->execute();
-
+        if ($game == 'cstrike') {
+            $query_admin = $dbh->prepare("
+							SELECT count(1), nickname AS nickname, password AS password, icq 
+							  FROM " . CSTRIKE . "." . CSTRIKE_PREFIX . "amxadmins admin
+								WHERE id = :admin_id
+								");
+            $query_admin->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+            $query_admin->execute();
+        }
+        if ($game == 'csgo') {
+            $query_admin = $dbh->prepare("
+							SELECT count(1), name AS nickname, password AS password, auth as icq
+							  FROM " . CSGO . "." . CSGO_PREFIX . "users vp
+								WHERE id = :admin_id
+								");
+            $query_admin->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+            $query_admin->execute();
+        }
         $query_cost = $dbh->prepare("
 						SELECT pts.cost, ss.type AS gametype
 						  FROM " . SHOP . "." . SHOP_PREFIX . "type_servers pts
@@ -149,7 +173,6 @@ class ExtensionClass
         $query_cost->bindParam(':pay_type', $pay_type, PDO::PARAM_INT);
         $query_cost->bindParam(':shop_srv_id', $shop_srv_id, PDO::PARAM_INT);
         $query_cost->execute();
-
         //Массивы
         $query_admin = $query_admin->fetch(PDO::FETCH_ASSOC);
         $query_cost = $query_cost->fetch(PDO::FETCH_ASSOC);
